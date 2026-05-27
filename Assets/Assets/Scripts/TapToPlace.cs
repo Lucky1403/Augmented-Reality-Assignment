@@ -34,13 +34,23 @@ public class TapToPlace : MonoBehaviour
 
                 if(spawnedObject == null)
                 {
-                    spawnedObject = Instantiate(prefabObject, hitPose.position, hitPose.rotation);
+                    spawnedObject = Instantiate(prefabObject, hitPose.position, Quaternion.identity);
+
+                    // Use the wall's surface normal as the quad's forward direction
+                    // hitPose.forward points INTO the wall; we want the quad facing OUT (toward camera)
+                    Vector3 wallNormal = hitPose.rotation * Vector3.up; // AR vertical planes use Y as normal
+
+                    // Make the quad face along the wall normal (toward the camera side)
+                    spawnedObject.transform.rotation = Quaternion.LookRotation(-wallNormal, Vector3.up);
+
+                    // Offset slightly from the wall so it doesn't z-fight
+                    spawnedObject.transform.position += wallNormal * 0.01f;
                 }
-                else
-                {
-                    spawnedObject.transform.position = hitPose.position;
-                    spawnedObject.transform.rotation = hitPose.rotation;
-                }
+                // else
+                // {
+                //     spawnedObject.transform.position = hitPose.position;
+                //     spawnedObject.transform.rotation = hitPose.rotation;
+                // }
             }
         }
     }
