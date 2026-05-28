@@ -19,38 +19,41 @@ public class TapToPlace : MonoBehaviour
 
     void Update()
     {
-        if(Input.touchCount > 0)
+        if (Input.touchCount > 0)
         {
             Touch touch = Input.GetTouch(0);
+            Debug.Log("Touch detected: " + touch.phase);
 
-            if(touch.phase == TouchPhase.Began)
+            if (touch.phase == TouchPhase.Began)
             {
                 touchPosition = touch.position;
+                Debug.Log("Touch began at: " + touchPosition);
             }
 
-            if(_arRaycastManager.Raycast(touchPosition,hits,TrackableType.PlaneWithinPolygon))
+            if (_arRaycastManager.Raycast(touchPosition, hits, TrackableType.PlaneWithinBounds | TrackableType.PlaneWithinPolygon | TrackableType.PlaneEstimated))
             {
+                Debug.Log("Raycast HIT! Hits count: " + hits.Count);
                 Pose hitPose = hits[0].pose;
 
-                if(spawnedObject == null)
+                if (spawnedObject == null)
                 {
+                    Debug.Log("Spawning object...");
                     spawnedObject = Instantiate(prefabObject, hitPose.position, Quaternion.identity);
 
-                    // Use the wall's surface normal as the quad's forward direction
-                    // hitPose.forward points INTO the wall; we want the quad facing OUT (toward camera)
-                    Vector3 wallNormal = hitPose.rotation * Vector3.up; // AR vertical planes use Y as normal
-
-                    // Make the quad face along the wall normal (toward the camera side)
+                    Vector3 wallNormal = hitPose.rotation * Vector3.up;
                     spawnedObject.transform.rotation = Quaternion.LookRotation(-wallNormal, Vector3.up);
-
-                    // Offset slightly from the wall so it doesn't z-fight
                     spawnedObject.transform.position += wallNormal * 0.01f;
+                    Debug.Log("Object spawned!");
                 }
                 // else
                 // {
                 //     spawnedObject.transform.position = hitPose.position;
                 //     spawnedObject.transform.rotation = hitPose.rotation;
                 // }
+            }
+            else
+            {
+                Debug.Log("Raycast MISSED");
             }
         }
     }

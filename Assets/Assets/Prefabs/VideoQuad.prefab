@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 9211957707518498321}
   - component: {fileID: 5787110930508545841}
   - component: {fileID: -5828361881934098655}
+  - component: {fileID: 2727475466417820790}
   m_Layer: 0
   m_Name: VideoQuad
   m_TagString: Untagged
@@ -115,7 +116,7 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8923149617778549366}
   m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: 8bb0d1dd8d2b73247b54a383e23ebebb, type: 3}
+  m_VideoClip: {fileID: 0}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 0}
@@ -143,3 +144,18 @@ VideoPlayer:
   m_WaitForFirstFrame: 1
   m_FrameReadyEventEnabled: 0
   m_VideoShaders: []
+--- !u!114 &2727475466417820790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8923149617778549366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 802f2762e54915c43bc95564b2cd9dbc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  videoPlayer: {fileID: -5828361881934098655}
+  videoAddresses:
+  - earthquake_video
