@@ -1,4 +1,3 @@
-// UIManager.cs
 using UnityEngine;
 using UnityEngine.UI;
 
