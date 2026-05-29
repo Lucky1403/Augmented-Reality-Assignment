@@ -1,4 +1,3 @@
-// VideoLoader.cs
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Video;
