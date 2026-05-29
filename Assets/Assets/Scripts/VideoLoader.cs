@@ -1,5 +1,5 @@
+// VideoLoader.cs
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
 using UnityEngine.AddressableAssets;
@@ -8,26 +8,25 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 public class VideoLoader : MonoBehaviour
 {
     [SerializeField] private VideoPlayer videoPlayer;
-
     [SerializeField]
     private string[] videoAddresses =
     {
-        "earthquake_video"
-        // We will add second video here later
+        "earthquake_video",
+        "earth_video2"
     };
 
     private int currentVideoIndex = 0;
     private AsyncOperationHandle<VideoClip> currentHandle;
+    private bool catalogLoaded = false;
+    private bool pendingLoad = false;
 
     private void Start()
     {
         StartCoroutine(InitializeAddressables());
-        Debug.Log("VideoLoader START called!");
     }
 
     private IEnumerator InitializeAddressables()
     {
-        // Load the remote catalog from Firebase
         var loadHandle = Addressables.LoadContentCatalogAsync(
             "https://augmented--reality-assignment.web.app/catalog_0.1.json"
         );
@@ -36,31 +35,60 @@ public class VideoLoader : MonoBehaviour
 
         if (loadHandle.Status == AsyncOperationStatus.Succeeded)
         {
-            Debug.Log("Catalog loaded successfully from Firebase!");
+            Debug.Log("Catalog loaded successfully!");
+            catalogLoaded = true;
+
+            if (videoPlayer != null)
+            {
+                LoadVideo(videoAddresses[currentVideoIndex]);
+            }
+            else
+            {
+                pendingLoad = true;
+            }
+        }
+        else
+        {
+            Debug.LogError("Catalog failed: " + loadHandle.OperationException);
+        }
+    }
+
+    public void SetVideoPlayer(VideoPlayer player)
+    {
+        videoPlayer = player;
+        Debug.Log("VideoPlayer assigned to VideoLoader!");
+
+        if (catalogLoaded)
+        {
             LoadVideo(videoAddresses[currentVideoIndex]);
         }
         else
         {
-            Debug.LogError("Failed to load catalog from Firebase!");
+            Debug.Log("Catalog not ready yet, video will load once catalog finishes.");
         }
     }
 
     public void LoadVideo(string address)
     {
+        if (videoPlayer == null)
+        {
+            Debug.LogWarning("VideoPlayer is null! Cannot load video.");
+            return;
+        }
+
         if (currentHandle.IsValid())
         {
             Addressables.Release(currentHandle);
         }
 
         currentHandle = Addressables.LoadAssetAsync<VideoClip>(address);
-
         currentHandle.Completed += (handle) =>
         {
             if (handle.Status == AsyncOperationStatus.Succeeded)
             {
                 videoPlayer.clip = handle.Result;
                 videoPlayer.Play();
-                Debug.Log("Video loaded successfully: " + address);
+                Debug.Log("Video loaded and playing: " + address);
             }
             else
             {
@@ -69,19 +97,13 @@ public class VideoLoader : MonoBehaviour
         };
     }
 
-    public void SwitchVideo()
-    {
-        currentVideoIndex = (currentVideoIndex + 1) % videoAddresses.Length;
-        LoadVideo(videoAddresses[currentVideoIndex]);
-    }
-
     public void SwitchToVideo(int index)
     {
         if (index >= 0 && index < videoAddresses.Length)
         {
             currentVideoIndex = index;
             LoadVideo(videoAddresses[currentVideoIndex]);
-            Debug.Log("Switched to video: " + videoAddresses[index]);
+            Debug.Log("Switching to video index: " + index);
         }
     }
 

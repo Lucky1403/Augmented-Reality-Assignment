@@ -1,12 +1,16 @@
-using System.Collections;
+// TapToPlace.cs
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
+using UnityEngine.Video;
 
 public class TapToPlace : MonoBehaviour
 {
     [SerializeField] private GameObject prefabObject;
+    [SerializeField] private VideoLoader videoLoader;
+    [SerializeField] private GameObject uiButtons;
+
     private GameObject spawnedObject;
     private Vector2 touchPosition;
     private ARRaycastManager _arRaycastManager;
@@ -15,6 +19,9 @@ public class TapToPlace : MonoBehaviour
     private void Awake()
     {
         _arRaycastManager = GetComponent<ARRaycastManager>();
+
+        if (uiButtons != null)
+            uiButtons.SetActive(false);
     }
 
     void Update()
@@ -22,38 +29,54 @@ public class TapToPlace : MonoBehaviour
         if (Input.touchCount > 0)
         {
             Touch touch = Input.GetTouch(0);
-            Debug.Log("Touch detected: " + touch.phase);
 
             if (touch.phase == TouchPhase.Began)
             {
                 touchPosition = touch.position;
-                Debug.Log("Touch began at: " + touchPosition);
             }
 
-            if (_arRaycastManager.Raycast(touchPosition, hits, TrackableType.PlaneWithinBounds | TrackableType.PlaneWithinPolygon | TrackableType.PlaneEstimated))
+            if (_arRaycastManager.Raycast(
+                touchPosition,
+                hits,
+                TrackableType.PlaneWithinBounds |
+                TrackableType.PlaneWithinPolygon |
+                TrackableType.PlaneEstimated))
             {
-                Debug.Log("Raycast HIT! Hits count: " + hits.Count);
                 Pose hitPose = hits[0].pose;
 
                 if (spawnedObject == null)
                 {
-                    Debug.Log("Spawning object...");
-                    spawnedObject = Instantiate(prefabObject, hitPose.position, Quaternion.identity);
+                    spawnedObject = Instantiate(
+                        prefabObject,
+                        hitPose.position,
+                        Quaternion.identity
+                    );
 
                     Vector3 wallNormal = hitPose.rotation * Vector3.up;
-                    spawnedObject.transform.rotation = Quaternion.LookRotation(-wallNormal, Vector3.up);
+                    spawnedObject.transform.rotation =
+                        Quaternion.LookRotation(-wallNormal, Vector3.up);
                     spawnedObject.transform.position += wallNormal * 0.01f;
-                    Debug.Log("Object spawned!");
+
+                    VideoPlayer vp = spawnedObject.GetComponent<VideoPlayer>();
+                    if (vp != null && videoLoader != null)
+                    {
+                        videoLoader.SetVideoPlayer(vp);
+                        Debug.Log("VideoPlayer found on prefab and assigned!");
+                    }
+                    else
+                    {
+                        if (vp == null)
+                            Debug.LogError("No VideoPlayer component found on prefab!");
+                        if (videoLoader == null)
+                            Debug.LogError("VideoLoader reference is missing on TapToPlace!");
+                    }
+
+                    if (uiButtons != null)
+                    {
+                        uiButtons.SetActive(true);
+                        Debug.Log("UI Buttons shown!");
+                    }
                 }
-                // else
-                // {
-                //     spawnedObject.transform.position = hitPose.position;
-                //     spawnedObject.transform.rotation = hitPose.rotation;
-                // }
-            }
-            else
-            {
-                Debug.Log("Raycast MISSED");
             }
         }
     }
